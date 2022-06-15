@@ -32,6 +32,8 @@ Mpu6050_Data_T mpu6050_data;
 sensors_event_t a, g, temp;
 PulseOximeter pox;
 float BPM, SpO2;
+
+MQTT_Send_Data_T mqtt_tx_package;
 void setup(void) 
 {
   Serial.begin(115200);
@@ -40,11 +42,6 @@ void setup(void)
   WiFi.begin("Ahmet", "11111111");
   client.setServer("broker.mqttdashboard.com", 1883);
   clock_gui_init();
-  
-  
-  
-  
-  
   
   if (!pox.begin())                               //Oximetre sensör haberleşmesi başlatılır
   {
@@ -58,32 +55,22 @@ void setup(void)
   }
 
   //pox.setIRLedCurrent(MAX30100_LED_CURR_7_6MA);   
-  
-  
-  
-  
   // time init
 
   task_timer._1_sec_timer = millis() + _1_sec_in_ms;
   task_timer._1_hour_timer = millis() + _10_sec_in_ms;
   task_timer._10_sec_timer = millis() + _10_sec_in_ms;
-
-  
 }
 
 void loop() 
 {
+  //
+  client.loop();
+  //
   pox.update();
   if (task_timer._200_ms_timer < millis()) 
   {
     //Serial.println("200ms task initated");
-    if(WiFi.status() == WL_CONNECTED && client.connected() == true)
-    {
-      //pox.shutdown();
-      client.publish("s_wristband", (const uint8_t *)"1?aZ", 4); 
-      //pox.begin();
-    }
-
 
     BPM = pox.getHeartRate();
     SpO2 = pox.getSpO2();
@@ -91,6 +78,13 @@ void loop()
     Serial.println(SpO2);
     Serial.print("Heart Rate : ");
     Serial.println(BPM);
+    if(WiFi.status() == WL_CONNECTED && client.connected() == true)
+    {
+      //pox.shutdown();
+      uint8_t arr[4] = {SpO2, BPM, temp.temperature, 0};
+      client.publish("s_wristband", (const uint8_t *)arr, 4); 
+      //pox.begin();
+    }
     task_timer._200_ms_timer += _200_ms;
   }
 
@@ -134,10 +128,6 @@ void loop()
       pox.begin();
     }
   }
-
-
-
-
   static uint64_t filter_time_stamp;
   if((millis() - filter_time_stamp) >= MPU6050_FILTER_PERIODE)      // TODO: Bu yapı yerine timer interrupt kullanılabilir.
   {
@@ -158,11 +148,11 @@ void loop()
 
     if(sample_ctr >= mpu6050_data.sample_size)
     {
-      //Create_MQTT_TX_Package(&mqtt_tx_package, mpu6050_data, &exti_flag);   // MQTT üzerinden yollanacak structure doldurulur.
+      Create_MQTT_TX_Package(&mqtt_tx_package, mpu6050_data);   // MQTT üzerinden yollanacak structure doldurulur.
       //Print_Mqtt_TX_Pack(mqtt_tx_package);         // MQTT paketi seri monitor üzerinden gözlemlenebilir.
       //Print_Raw_MQTT_TX_Pack(mqtt_tx_package);       // Anlamlandırılmamış MQTT paketi seri monitörden görülebilir.
-      //client.publish(data_topic, (const uint8_t *)mqtt_tx_package.tx_buf, sizeof(mqtt_tx_package.tx_buf));       // MQTT üzerinden iletim.
-      //Clear_Mpu_Data(&mpu6050_data);                            // MPU6050 verilerinin tutulduğu structure "sample_size" hariç sıfırlanır.
+      client.publish("step_wristband", (const uint8_t *)mqtt_tx_package.tx_buf, sizeof(mqtt_tx_package.tx_buf));       // MQTT üzerinden iletim.
+      Clear_Mpu_Data(&mpu6050_data);                            // MPU6050 verilerinin tutulduğu structure "sample_size" hariç sıfırlanır.
 
       
       Serial.println(g.gyro.x);

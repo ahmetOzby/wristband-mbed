@@ -46,15 +46,15 @@ typedef union
     int16_t median_gyro_y;
     int16_t median_gyro_z;
 
-    int16_t pitch_integral;
+    //int16_t pitch_integral;
     int16_t pitch_derrivative;
 
-    int16_t roll_integral;
+    //int16_t roll_integral;
     int16_t roll_derrivative;
 
-    uint8_t button_pressed;
+    //uint8_t button_pressed;
   };
-  uint8_t tx_buf[21];
+  uint8_t tx_buf[16];
 }MQTT_Send_Data_T;
 
 const int16_t ACCEL_Z_RAW_OFFSET = 3513;
@@ -80,7 +80,7 @@ void Sum_Raw_Data(Mpu6050_Data_T *mpu6050_data, sensors_event_t a, sensors_event
 void Offset_mpu6050(sensors_event_t *a, sensors_event_t *g);  // m/s2 ve dps birimlerine dönüştürülmüş ham verilere belirlenmiş offsetleri ekler.
 void Pitch_Roll_Calculate(Mpu6050_Data_T *mpu6050_data, sensors_event_t a, sensors_event_t g);  // Complimentary filtresi kullanarak "pitch" ve "roll"u hesaplar.
 void Calculate_Pitch_Roll_Characteristics(Mpu6050_Data_T *mpu6050_data);    // Hesaplanan "pitch" ve "roll"un integral ve türev toplamını hesaplar.
-void Create_MQTT_TX_Package(MQTT_Send_Data_T *mqtt_tx_package, Mpu6050_Data_T mpu6050_data, volatile bool *button_pressed);  // MQTT üzerinden yollanacak nihai verileri çıkartır.
+void Create_MQTT_TX_Package(MQTT_Send_Data_T *mqtt_tx_package, Mpu6050_Data_T mpu6050_data);  // MQTT üzerinden yollanacak nihai verileri çıkartır.
 void Print_Mqtt_TX_Pack(MQTT_Send_Data_T mqtt_tx_package);  // Hata ayıklaması için oluşturulmuş bu fonksiyon MQTT paketinin seri monitorden görülebilmesini sağlar.
 void Clear_Mpu_Data(Mpu6050_Data_T *mpu6050_data);  // mpu6050 verilerinin işlenip kaydedildiği structure bir sonraki iterasyon için sıfırlanır. (sample_size hariç)
 void Print_Raw_MQTT_TX_Pack(MQTT_Send_Data_T mqtt_tx_package);

@@ -110,7 +110,7 @@ void Calculate_Pitch_Roll_Characteristics(Mpu6050_Data_T *mpu6050_data)
 /* Bu fonksiyon "sample_size"a uygun periyodda çağrılmalıdır. İşlenen ve ham verilerin geçen 
  * zamandaki ortalaması alınarak MQTT tx paketine eklenir.
 */
-void Create_MQTT_TX_Package(MQTT_Send_Data_T *mqtt_tx_package, Mpu6050_Data_T mpu6050_data, volatile bool *button_pressed)
+void Create_MQTT_TX_Package(MQTT_Send_Data_T *mqtt_tx_package, Mpu6050_Data_T mpu6050_data)
 {
   mqtt_tx_package->median_accel_x = int16_t(mpu6050_data.sum_accel_x / mpu6050_data.sample_size * 100);
   mqtt_tx_package->median_accel_y = int16_t(mpu6050_data.sum_accel_y / mpu6050_data.sample_size * 100);
@@ -119,14 +119,14 @@ void Create_MQTT_TX_Package(MQTT_Send_Data_T *mqtt_tx_package, Mpu6050_Data_T mp
   mqtt_tx_package->median_gyro_y = int16_t(mpu6050_data.sum_gyro_y / mpu6050_data.sample_size * 100);
   mqtt_tx_package->median_gyro_z = int16_t(mpu6050_data.sum_gyro_z / mpu6050_data.sample_size * 100);
 
-  mqtt_tx_package->pitch_integral = mpu6050_data.sum_pitch / mpu6050_data.sample_size * 100;
-  mqtt_tx_package->roll_integral = mpu6050_data.sum_roll / mpu6050_data.sample_size * 100;
+  //mqtt_tx_package->pitch_integral = mpu6050_data.sum_pitch / mpu6050_data.sample_size * 100;
+  //mqtt_tx_package->roll_integral = mpu6050_data.sum_roll / mpu6050_data.sample_size * 100;
 
 
   mqtt_tx_package->pitch_derrivative = mpu6050_data.pitch_derivative_sum / mpu6050_data.sample_size * 100;
   mqtt_tx_package->roll_derrivative = mpu6050_data.roll_derivative_sum / mpu6050_data.sample_size * 100;
 
-  if(*button_pressed == true)
+  /*if(*button_pressed == true)
   {
     mqtt_tx_package->button_pressed = 1;
     *button_pressed = false;
@@ -135,7 +135,7 @@ void Create_MQTT_TX_Package(MQTT_Send_Data_T *mqtt_tx_package, Mpu6050_Data_T mp
   else
   {
     mqtt_tx_package->button_pressed = 0;
-  }
+  }*/
 }
 
 // Oluşturulan MQTT TX paketinin hata ayıklama için yazdırma fonksiyonu.
@@ -159,11 +159,11 @@ void Print_Mqtt_TX_Pack(MQTT_Send_Data_T mqtt_tx_package)
   Serial.print("  Median Gyro Z: ");
   Serial.println(mqtt_tx_package.median_gyro_z);
   
-  Serial.print("Pitch integral Rate: ");
+  /*Serial.print("Pitch integral Rate: ");
   Serial.print(mqtt_tx_package.pitch_integral);
   
   Serial.print("  Roll integral Rate: ");
-  Serial.print(mqtt_tx_package.roll_integral);
+  Serial.print(mqtt_tx_package.roll_integral);*/
  
 
   Serial.print("  Pitch Derrivative Rate: ");
